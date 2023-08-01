@@ -1,12 +1,14 @@
 from django.shortcuts import render
 from django.contrib.auth.hashers import check_password
 from rest_framework.generics import CreateAPIView, GenericAPIView
+from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
 
 
 from .serializers import RegisterUserSerializer, LoginUserSerializer
+from .permissions import IsAuthenticationJwt
 from .models import MyUser
 
 
@@ -46,3 +48,14 @@ class LoginUserView(GenericAPIView):
             return response
 
         return Response(serializer_obj.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class LogoutUserView(APIView):
+    permission_classes = [IsAuthenticationJwt]
+    http_method_names = ['get']
+
+    def get(self, request, *args, **kwargs):
+        response = Response({'message': 'Logout Successfully !'}, status=status.HTTP_200_OK)
+        # delete cookie access_token
+        response.delete_cookie(key='access_token')
+        return response
