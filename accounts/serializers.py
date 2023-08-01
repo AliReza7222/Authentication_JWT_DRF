@@ -29,3 +29,8 @@ class RegisterUserSerializer(serializers.ModelSerializer):
         del validated_data['confirm_password']
         validated_data['password'] = make_password(validated_data['password'])
         return super().create(validated_data)
+
+
+class LoginUserSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    password = serializers.CharField(write_only=True)

@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 from pathlib import Path
+from datetime import timedelta
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -56,6 +58,13 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'config.urls'
 
+# config Rest Framework
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ]
+}
+
 # config corsheaders
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:8000',
@@ -63,6 +72,16 @@ CORS_ALLOWED_ORIGINS = [
 
 # Model custom user
 AUTH_USER_MODEL = 'accounts.MyUser'
+
+# Config Simple Jwt Token
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=15),
+    "REFRESH_TOKEN_LIFETIME": timedelta(hours=1),
+    "ALGORITHM": "HS256",
+    "SLIDING_TOKEN_LIFETIME": timedelta(minutes=15),
+    "SLIDING_TOKEN_REFRESH_LIFETIME": timedelta(hours=1),
+}
 
 TEMPLATES = [
     {
