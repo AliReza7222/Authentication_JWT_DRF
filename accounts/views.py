@@ -1,16 +1,17 @@
 from django.shortcuts import render
-from django.contrib.auth.hashers import check_password
-from rest_framework.generics import CreateAPIView, GenericAPIView
+from django.contrib.auth.hashers import check_password, make_password
+from rest_framework.generics import CreateAPIView, GenericAPIView, UpdateAPIView
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.exceptions import TokenError
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import get_authorization_header
 
 
 
-from .serializers import RegisterUserSerializer, LoginUserSerializer
+from .serializers import RegisterUserSerializer, LoginUserSerializer, ChangePasswordSerializer
 from .models import MyUser
 
 
@@ -67,3 +68,23 @@ class RefreshTokenView(APIView):
 
         except TokenError:
             return Response({'error': 'Invalid refresh token.'}, status=status.HTTP_401_UNAUTHORIZED)
+
+
+# View for Change Password
+class ChangePasswordView(UpdateAPIView):
+    serializer_class = ChangePasswordSerializer
+    permission_classes = [IsAuthenticated, ]
+
+    def update(self, request, *args, **kwargs):
+        user = request.user
+        data = request.data
+        serializer = self.get_serializer(data=data)
+        if serializer.is_valid():
+            old_pass, new_pass = data.get('old_password'), data.get('new_password')
+            if check_password(old_pass, user.password):
+                hash_password = make_password(new_pass)
+                user.password = hash_password
+                user.save()
+                return Response({'message': 'Update Your Password Successfully .'}, status=status.HTTP_200_OK)
+            return Response({'error': 'The old password is wrong !'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
