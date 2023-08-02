@@ -5,10 +5,11 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.authentication import get_authorization_header
+
 
 
 from .serializers import RegisterUserSerializer, LoginUserSerializer
-from .permissions import IsAuthenticationJwt
 from .models import MyUser
 
 
@@ -42,20 +43,26 @@ class LoginUserView(GenericAPIView):
             refresh_token = RefreshToken.for_user(user)
             # create access token
             access_token = refresh_token.access_token
-            # create a object Response for create cookies token but i don't know this work is good or no !
-            response = Response({'message':f'Login successfully {user} .'}, status=status.HTTP_200_OK)
-            response.set_cookie(key='access_token', value=access_token, httponly=True, secure=True, max_age=900)
-            return response
+            # return Response token access and refresh
+            return Response({'access_token': str(access_token), 'refresh_token': str(refresh_token)},
+                            status=status.HTTP_200_OK)
 
         return Response(serializer_obj.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class LogoutUserView(APIView):
-    permission_classes = [IsAuthenticationJwt]
-    http_method_names = ['get']
+# view for send refresh_token and get access_token
+class RefreshTokenView(APIView):
 
-    def get(self, request, *args, **kwargs):
-        response = Response({'message': 'Logout Successfully !'}, status=status.HTTP_200_OK)
-        # delete cookie access_token
-        response.delete_cookie(key='access_token')
-        return response
+    def post(self, request, *args, **kwargs):
+        refresh_token = request.data.get('refresh_token')
+
+        if not refresh_token:
+            return Response({'error': 'Please provide a refresh token.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            refresh = RefreshToken(refresh_token)
+            access_token = refresh.access_token
+            return Response({'access_token': str(access_token)}, status=status.HTTP_200_OK)
+
+        except TokenError:
+            return Response({'error': 'Invalid refresh token.'}, status=status.HTTP_401_UNAUTHORIZED)
