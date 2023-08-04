@@ -81,10 +81,15 @@ class ChangePasswordView(UpdateAPIView):
         serializer = self.get_serializer(data=data)
         if serializer.is_valid():
             old_pass, new_pass = data.get('old_password'), data.get('new_password')
+            # check old passvord correct .
             if check_password(old_pass, user.password):
+                # make hash password .
                 hash_password = make_password(new_pass)
                 user.password = hash_password
+                # save new password .
                 user.save()
                 return Response({'message': 'Update Your Password Successfully .'}, status=status.HTTP_200_OK)
+            # show error if old password be incorrect .
             return Response({'error': 'The old password is wrong !'}, status=status.HTTP_400_BAD_REQUEST)
+        # show error if invalid object serializer .
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
