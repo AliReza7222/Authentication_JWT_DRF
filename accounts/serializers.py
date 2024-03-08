@@ -10,7 +10,9 @@ class RegisterUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = MyUser
         fields = ['username', 'email', 'password', 'confirm_password']
-        write_only_fields = ('password', )
+        extra_kwargs = {
+            'password': {'write_only': True}
+        }
 
     def validate_password(self, value):
         if len(value) <= 6:

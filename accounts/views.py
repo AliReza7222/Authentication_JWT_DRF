@@ -70,9 +70,10 @@ class ChangePasswordView(GenericAPIView):
     permission_classes = (IsAuthenticated, )
 
     def post(self, request, *args, **kwargs):
+        user = request.user
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
-            data = serializer.validate_data
+            data = serializer.validated_data
             old_pass, new_pass = data.get('old_password'), data.get('new_password')
             if check_password(old_pass, request.user.password): # check old passvord correct .
                 user.set_password(new_pass) # set new password .
