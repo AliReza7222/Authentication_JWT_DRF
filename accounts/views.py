@@ -1,13 +1,12 @@
 from django.contrib.auth.hashers import check_password, make_password
 from rest_framework.exceptions import AuthenticationFailed
-from rest_framework.generics import CreateAPIView
+from rest_framework.generics import CreateAPIView, GenericAPIView
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.authentication import get_authorization_header
 
 from .models import MyUser
 from .serializers import *
@@ -75,10 +74,8 @@ class ChangePasswordView(GenericAPIView):
         if serializer.is_valid():
             data = serializer.validate_data
             old_pass, new_pass = data.get('old_password'), data.get('new_password')
-            # check old passvord correct .
-            if check_password(old_pass, request.user.password):
-                user.set_password(new_pass)
-                # save new password .
+            if check_password(old_pass, request.user.password): # check old passvord correct .
+                user.set_password(new_pass) # set new password .
                 user.save()
                 return Response({'message': 'Update Your Password Successfully .'}, status=status.HTTP_200_OK)
             # show error if old password be incorrect .
