@@ -5,14 +5,12 @@ from .models import MyUser
 
 
 class RegisterUserSerializer(serializers.ModelSerializer):
-
-    password = serializers.CharField(write_only=True)
     confirm_password = serializers.CharField(write_only=True)
 
     class Meta:
         model = MyUser
         fields = ['username', 'email', 'password', 'confirm_password']
-
+        write_only_fields = ('password', )
 
     def validate_password(self, value):
         if len(value) <= 6:
